@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const database = require('../config/database');
 
-router.get('/', (req, res, next) => {
+router.get('/', (req, res, next) => { //OK
 
     //valores default da request
     let limite = req.query.limite ? req.query.limite : 25;
     let pagina = req.query.pagina ? req.query.pagina : 1;
+    let nome = req.query.nome ? req.query.nome : "";
 
     let sql = `SELECT * FROM alunos WHERE nome LIKE '%${req.query.nome}%'`; //nao conseguimos implementar com ? e params
     let params = [];
@@ -23,18 +24,16 @@ router.get('/', (req, res, next) => {
             nome: req.query.nome,
             request: {
                 type: 'GET',
-                descriptionn: 'Return all students or the ones with the casted nome',
+                description: 'Return all students or the ones with the casted nome',
                 url: 'https://locahost:3000/alunos'
             },
             data: rows
         });
     });
-    database.close();
+    // database.close();
 });
 
-
-
-router.post('/', (req, res, next) => {
+router.post('/', (req, res, next) => { //OK
 
     let nome = req.body.nome;
     let rga = req.body.rga;
@@ -55,7 +54,6 @@ router.post('/', (req, res, next) => {
             });
             return; //pq esse return?
         } else {
-            console.log(this.lastID);
             database.get(`SELECT * FROM alunos WHERE id LIKE '${this.lastID}'`,
                 function(err, row) {
                     if (err) {
@@ -71,7 +69,7 @@ router.post('/', (req, res, next) => {
                             curso: row.curso,
                             request: {
                                 type: 'POST',
-                                descriptionn: 'Register student info in body to alunos.db',
+                                description: 'Register student info in body to alunos.db',
                                 url: 'https://locahost:3000/alunos',
                                 body: {
                                     rga: 'String (obrigatorio)',
@@ -80,68 +78,113 @@ router.post('/', (req, res, next) => {
                                 }
                             }
                         })
-
                     }
                 });
         }
-        database.close();
     });
-
-
-
-
+    // database.close();
 });
 
-router.put('/', (req, res, next) => {
+router.put('/', (req, res, next) => { //OK
     res.status(405).json({
         msg: 'Method Not Allowed'
-    })
+    });
 });
 
-router.delete('/', (req, res, next) => {
+router.delete('/', (req, res, next) => { //OK
     res.status(405).json({
         msg: 'Method Not Allowed'
-    })
+    });
+});
+
+router.get('/:id', (req, res, next) => { //OK
+    database.get(`SELECT * FROM alunos WHERE id = '${req.params.id}'`, function(err, row) {
+        if (err) {
+            throw err;
+        } else if (row === undefined) {
+            res.status(404).json({
+                msg: 'Not Found (student)'
+            });
+        } else {
+            res.status(200).json({
+                msg: 'OK - found',
+                id: row.id,
+                registrado_em: row.registro_em,
+                situacao: row.situacao,
+                rga: row.rga,
+                nome: row.nome,
+                curso: row.curso,
+                request: {
+                    type: 'GET',
+                    description: 'Return student information from respective id',
+                    url: `https://locahost:3000/alunos/${req.params.id}`,
+                }
+            });
+        }
+    });
+    // database.close();
+});
+
+router.put('/:id', (req, res, next) => { //OK
+    database.get(`SELECT * FROM alunos WHERE id = '${req.params.id}'`, function(err, row) {
+        if (err) {
+            throw err;
+        } else if (row === undefined) {
+            res.status(404).json({
+                msg: 'Not Found (student)'
+            });
+        } else {
+            let id = req.params.id;
+            let registrado_em = req.body.registrado_em ? req.body.registrado_em : row.registro_em; //nao faz sentido alterar
+            let situacao = req.body.situacao ? req.body.situacao : row.situacao;
+            let rga = req.body.rga ? req.body.rga : row.rga;
+            let nome = req.body.nome ? req.body.nome : row.nome;
+            let curso = req.body.curso ? req.body.curso : row.curso;
+
+            // database.run(`UPDATE alunos SET registro_em='?', situacao='?', rga='?', nome='?', curso='?' WHERE id = '${id}'`, [registrado_em, situacao, rga, nome, curso], function(err) {
+            database.run(`UPDATE alunos Set registro_em=${registrado_em}, situacao=${situacao}, rga=${rga}, nome=${nome}, curso=${curso} WHERE id = ${id}`, function(err) {
+                if (err) {
+                    throw err;
+                } else {
+                    database.get(`SELECT * FROM alunos WHERE id LIKE '${id}'`,
+                        function(err, row) {
+                            if (err) {
+                                throw err;
+                            } else {
+                                res.status(200).json({
+                                    msg: 'OK  - Updated',
+                                    id: row.id,
+                                    registrado_em: row.registro_em,
+                                    situacao: row.situacao,
+                                    rga: row.rga,
+                                    nome: row.nome,
+                                    curso: row.curso,
+                                    request: {
+                                        type: 'PUT',
+                                        description: 'Update student info in body to alunos.db',
+                                        url: `https://locahost:3000/alunos/${req.params.id}`,
+                                        body: {
+                                            registro_em: 'DateTime',
+                                            situacao: 'String',
+                                            rga: 'String',
+                                            nome: 'String',
+                                            curso: 'String (opcional)',
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                }
+            });
+
+        }
+    }); // database.close();
 });
 
 
 
-router.get('/:id', (req, res, next) => {
 
-
-
-    if (req.params.id === undefined) {
-        res.status(404).json({
-            msg: 'Not Found (student)'
-        })
-    } else {
-        res.status(200).json({
-            msg: 'OK'
-        })
-    }
-
-});
-// }
-//     res.status(200).json({
-//         id: req.params.id
-
-//     });
-// });
-
-// router.put('/:id', (req, res, next) => {
-// 404 (não encontrado): Uma mensagem informando que o usuário não foi encontrado.
-//     res.status(200).json({
-//         id: 'unico',
-//         registrado_em: 'dia X', //https://www.devmedia.com.br/date-javascript-trabalhando-com-data-e-hora-em-js/37222
-//         situacao: 'ativo/inativo',
-//         rga: 'obrigatorio/string',
-//         nome: 'obrigatorio/string',
-//         curso: 'string'
-//     })
-// });
-
-
-// router.del('/:id', (req, res, next) => {
+// router.delete('/:id', (req, res, next) => {
 // 404 (não encontrado): Uma mensagem informando que o usuário não foi encontrado.
 //     res.status(200).json({ 
 //         id: 'unico',
@@ -166,5 +209,5 @@ router.get('/:id', (req, res, next) => {
 //         curso: 'string'
 //     })
 // });
-
+// database.close();
 module.exports = router;

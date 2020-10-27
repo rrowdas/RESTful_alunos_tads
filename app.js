@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const rotaAlunos = require('./routes/alunos');
 
 app.use(morgan('dev'));
+app.use(express.json());
 app.use('/alunos', rotaAlunos);
 
 

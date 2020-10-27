@@ -13,38 +13,75 @@ router.get('/', (req, res, next) => {
 
     database.all(sql, params, (err, rows) => {
         if (err) {
-            res.status(400).json({ "Bad Request": err.message });
+            res.status(400).json({ msg: 'Bad Request: ' + err.message });
             return;
         }
         res.status(200).json({
+            msg: 'OK',
             limite: req.query.limite,
             pagina: req.query.pagina,
             nome: req.query.nome,
             request: {
                 type: 'GET',
-                descriptionn: 'return all students or the ones with the casted nome',
+                descriptionn: 'Return all students or the ones with the casted nome',
                 url: 'https://locahost:3000/alunos'
             },
-            message: 'Success',
             data: rows
         });
     });
     database.close();
-
-    // 400 (parâmetros inválidos): Uma mensagem informando o erro.
 });
 
 
+
 router.post('/', (req, res, next) => {
-    res.status(201).json({
-            id: 'unico',
-            registrado_em: 'dia X', //https://www.devmedia.com.br/date-javascript-trabalhando-com-data-e-hora-em-js/37222
-            situacao: 'ativo/inativo',
-            rga: 'obrigatorio/string',
-            nome: 'obrigatorio/string',
-            curso: 'string'
-        })
-        // 400 (parâmetros inválidos): Uma mensagem informando o erro.
+
+    let nome = req.body.nome;
+    let rga = req.body.rga;
+    let curso = req.body.curso;
+
+
+    database.run(`INSERT INTO alunos(nome, rga, curso) VALUES(?, ?, ?)`, [nome, rga, curso], function(err) { //colocar ou nao situacao?
+        if (err) {
+            res.status(400).json({
+                msg: 'Bad Request: ' + err.message,
+                request: {
+                    body: {
+                        rga: 'String (obrigatorio)',
+                        nome: 'String (obrigatorio)',
+                        curso: 'String (opcional)'
+                    }
+                }
+            });
+            return; //pq esse return?
+        } else {
+            res.status(201).json({
+                msg: 'Created',
+                id: `${this.lastID}`,
+                registrado_em: `${this.registro_em}`, //nao ta funcionando esses THIS
+                // database.get(`SELECT registro_em FROM alunos WHERE id IN '${this.lastID}'`), //https://www.devmedia.com.br/date-javascript-trabalhando-com-data-e-hora-em-js/37222
+                situacao: `${this.changes.situacao}`, //nao ta funcionando esses THIS
+                rga: `${this.changes.rga}`, //nao ta funcionando esses THIS
+                nome: `${this.changes.nome}`, //nao ta funcionando esses THIS
+                curso: `${this.changes.curso}`, //nao ta funcionando esses THIS
+                request: {
+                    type: 'POST',
+                    descriptionn: 'Register student info in body to alunos.db',
+                    url: 'https://locahost:3000/alunos',
+                    body: {
+                        rga: 'String (obrigatorio)',
+                        nome: 'String (obrigatorio)',
+                        curso: 'String (opcional)'
+                    }
+                }
+            })
+        }
+        database.close();
+    });
+
+
+
+
 });
 
 router.put('/', (req, res, next) => {
@@ -61,12 +98,21 @@ router.delete('/', (req, res, next) => {
 
 
 
-// router.get('/:id', (req, res, next) => {
-// if (res.length === 0) {
-//     res.status(404).jsonn({
-//     msg: 'Not Found (student)'
-// });
+router.get('/:id', (req, res, next) => {
 
+
+
+    if (req.params.id === undefined) {
+        res.status(404).json({
+            msg: 'Not Found (student)'
+        })
+    } else {
+        res.status(200).json({
+            msg: 'OK'
+        })
+    }
+
+});
 // }
 //     res.status(200).json({
 //         id: req.params.id

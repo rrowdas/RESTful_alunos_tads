@@ -55,26 +55,34 @@ router.post('/', (req, res, next) => {
             });
             return; //pq esse return?
         } else {
-            res.status(201).json({
-                msg: 'Created',
-                id: `${this.lastID}`,
-                registrado_em: `${this.registro_em}`, //nao ta funcionando esses THIS
-                // database.get(`SELECT registro_em FROM alunos WHERE id IN '${this.lastID}'`), //https://www.devmedia.com.br/date-javascript-trabalhando-com-data-e-hora-em-js/37222
-                situacao: `${this.changes.situacao}`, //nao ta funcionando esses THIS
-                rga: `${this.changes.rga}`, //nao ta funcionando esses THIS
-                nome: `${this.changes.nome}`, //nao ta funcionando esses THIS
-                curso: `${this.changes.curso}`, //nao ta funcionando esses THIS
-                request: {
-                    type: 'POST',
-                    descriptionn: 'Register student info in body to alunos.db',
-                    url: 'https://locahost:3000/alunos',
-                    body: {
-                        rga: 'String (obrigatorio)',
-                        nome: 'String (obrigatorio)',
-                        curso: 'String (opcional)'
+            console.log(this.lastID);
+            database.get(`SELECT * FROM alunos WHERE id LIKE '${this.lastID}'`,
+                function(err, row) {
+                    if (err) {
+                        throw err;
+                    } else {
+                        res.status(201).json({
+                            msg: 'Created',
+                            id: row.id,
+                            registrado_em: row.registro_em,
+                            situacao: row.situacao,
+                            rga: row.rga,
+                            nome: row.nome,
+                            curso: row.curso,
+                            request: {
+                                type: 'POST',
+                                descriptionn: 'Register student info in body to alunos.db',
+                                url: 'https://locahost:3000/alunos',
+                                body: {
+                                    rga: 'String (obrigatorio)',
+                                    nome: 'String (obrigatorio)',
+                                    curso: 'String (opcional)'
+                                }
+                            }
+                        })
+
                     }
-                }
-            })
+                });
         }
         database.close();
     });

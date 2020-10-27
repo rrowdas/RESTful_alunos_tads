@@ -1,10 +1,10 @@
 const express = require('express');
-
 const app = express();
+const morgan = require('morgan');
 
 const rotaAlunos = require('./routes/alunos');
 
-
+app.use(morgan('dev'));
 app.use('/alunos', rotaAlunos);
 
 

@@ -3,6 +3,9 @@ const router = express.Router();
 const database = require('../config/database');
 
 router.get('/', (req, res, next) => {
+
+    // let limite = req.query.limite ? req.query.limite : 25;
+
     let sql = `select * from alunos WHERE nome LIKE '%${req.query.nome}%'`;
     let params = [];
 

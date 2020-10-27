@@ -1,19 +1,31 @@
 const express = require('express');
 const router = express.Router();
+const database = require('../config/database');
 
 router.get('/', (req, res, next) => {
-    res.status(200).send({
-        limite: req.query.limite, //25
-        pagina: req.query.pagina, //1
-        nome: req.query.nome
+    let sql = `select * from alunos WHERE nome LIKE '%${req.query.nome}%'`;
+    let params = [];
 
+    database.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.status(200).json({
+            limite: req.query.limite, //25
+            pagina: req.query.pagina, //1
+            nome: req.query.nome,
+            "message": "success",
+            "data": rows
+        });
     });
+
     // 400 (parâmetros inválidos): Uma mensagem informando o erro.
 });
 
 
 router.post('/', (req, res, next) => {
-    res.status(201).send({
+    res.status(201).json({
             id: 'unico',
             registrado_em: 'dia X', //https://www.devmedia.com.br/date-javascript-trabalhando-com-data-e-hora-em-js/37222
             situacao: 'ativo/inativo',
@@ -25,13 +37,13 @@ router.post('/', (req, res, next) => {
 });
 
 router.put('/', (req, res, next) => {
-    res.status(405).send({
+    res.status(405).json({
         msg: 'Method Not Allowed'
     })
 });
 
-router.del('/', (req, res, next) => {
-    res.status(405).send({
+router.delete('/', (req, res, next) => {
+    res.status(405).json({
         msg: 'Method Not Allowed'
     })
 });
@@ -41,7 +53,7 @@ router.del('/', (req, res, next) => {
 // router.get('/:id', (req, res, next) => {
 
 // 404 (não encontrado): Uma mensagem informando que o usuário não foi encontrado.
-//     res.status(200).send({
+//     res.status(200).json({
 //         id: req.params.id
 
 //     });
@@ -49,7 +61,7 @@ router.del('/', (req, res, next) => {
 
 // router.put('/:id', (req, res, next) => {
 // 404 (não encontrado): Uma mensagem informando que o usuário não foi encontrado.
-//     res.status(200).send({
+//     res.status(200).json({
 //         id: 'unico',
 //         registrado_em: 'dia X', //https://www.devmedia.com.br/date-javascript-trabalhando-com-data-e-hora-em-js/37222
 //         situacao: 'ativo/inativo',
@@ -62,7 +74,7 @@ router.del('/', (req, res, next) => {
 
 // router.del('/:id', (req, res, next) => {
 // 404 (não encontrado): Uma mensagem informando que o usuário não foi encontrado.
-//     res.status(200).send({ 
+//     res.status(200).json({ 
 //         id: 'unico',
 //         registrado_em: 'dia X', //https://www.devmedia.com.br/date-javascript-trabalhando-com-data-e-hora-em-js/37222
 //         situacao: 'ativo/inativo',
@@ -76,7 +88,7 @@ router.del('/', (req, res, next) => {
 
 // router.post('/:id', (req, res, next) => {
 // - **405 (método não permitido):** Uma mensagem informando o erro.
-//     res.status(201).send({
+//     res.status(201).json({
 //         id: 'unico',
 //         registrado_em: 'dia X', //https://www.devmedia.com.br/date-javascript-trabalhando-com-data-e-hora-em-js/37222
 //         situacao: 'ativo/inativo',

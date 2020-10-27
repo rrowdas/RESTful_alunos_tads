@@ -4,12 +4,22 @@ const database = require('../config/database');
 
 router.get('/', (req, res, next) => { //OK
 
-    //valores default da request
+    /** Valores default da request **/
     let limite = req.query.limite ? req.query.limite : 25;
     let pagina = req.query.pagina ? req.query.pagina : 1;
     let nome = req.query.nome ? req.query.nome : "";
 
-    let sql = `SELECT * FROM alunos WHERE nome LIKE '%${req.query.nome}%'`; //nao conseguimos implementar com ? e params
+    /** Criamos a sql padrão **/
+    let sql = `SELECT * FROM alunos`;
+
+    /** Caso tenha valor, adiciona ao sql **/
+    if (nome) {
+        sql += ` WHERE nome LIKE '%${nome}%'`; //
+    }
+
+    /** Adiciona a ideia de paginação **/
+    sql += ` LIMIT ${limite} OFFSET (${limite} * (${pagina} - 1))`
+
     let params = [];
 
     database.all(sql, params, (err, rows) => {
@@ -34,13 +44,11 @@ router.get('/', (req, res, next) => { //OK
 });
 
 router.post('/', (req, res, next) => { //OK
-
     let nome = req.body.nome;
     let rga = req.body.rga;
     let curso = req.body.curso;
 
-
-    database.run(`INSERT INTO alunos(nome, rga, curso) VALUES(?, ?, ?)`, [nome, rga, curso], function(err) { //colocar ou nao situacao?
+    database.run(`INSERT INTO alunos(nome, rga, curso, situacao) VALUES(?, ?, ?, 'ativo')`, [nome, rga, curso], function(err) {
         if (err) {
             res.status(400).json({
                 msg: 'Bad Request: ' + err.message,
@@ -52,7 +60,6 @@ router.post('/', (req, res, next) => { //OK
                     }
                 }
             });
-            return; //pq esse return?
         } else {
             database.get(`SELECT * FROM alunos WHERE id LIKE '${this.lastID}'`,
                 function(err, row) {
@@ -129,7 +136,7 @@ router.get('/:id', (req, res, next) => { //OK
     // database.close();
 });
 
-router.put('/:id', (req, res, next) => { //TNC NAO SEI FAZER UPDATE
+router.put('/:id', (req, res, next) => { // OK
     database.get(`SELECT * FROM alunos WHERE id = '${req.params.id}'`, function(err, row) {
         if (err) {
             throw err;
@@ -139,14 +146,13 @@ router.put('/:id', (req, res, next) => { //TNC NAO SEI FAZER UPDATE
             });
         } else {
             let id = req.params.id;
-            let registrado_em = req.body.registrado_em ? req.body.registrado_em : row.registro_em; //nao faz sentido alterar
+            let registrado_em = req.body.registrado_em ? req.body.registrado_em : row.registro_em;
             let situacao = req.body.situacao ? req.body.situacao : row.situacao;
             let rga = req.body.rga ? req.body.rga : row.rga;
             let nome = req.body.nome ? req.body.nome : row.nome;
             let curso = req.body.curso ? req.body.curso : row.curso;
 
-            // database.run(`UPDATE alunos SET registro_em='?', situacao='?', rga='?', nome='?', curso='?' WHERE id = '${id}'`, [registrado_em, situacao, rga, nome, curso], function(err) {
-            database.run(`UPDATE alunos Set registro_em=${registrado_em}, situacao=${situacao}, rga=${rga}, nome=${nome}, curso=${curso} WHERE id = ${id}`, function(err) {
+            database.run(`UPDATE alunos Set registro_em='${registrado_em}', situacao='${situacao}', rga='${rga}', nome='${nome}', curso='${curso}' WHERE id = ${id}`, function(err) {
                 if (err) {
                     throw err;
                 } else {
@@ -180,10 +186,10 @@ router.put('/:id', (req, res, next) => { //TNC NAO SEI FAZER UPDATE
                         });
                 }
             });
-
         }
     }); // database.close();
 });
+
 
 router.delete('/:id', (req, res, next) => { //OK
     database.get(`SELECT * FROM alunos WHERE id = '${req.params.id}'`, function(err, row) {

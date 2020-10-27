@@ -181,20 +181,40 @@ router.put('/:id', (req, res, next) => { //OK
     }); // database.close();
 });
 
+router.delete('/:id', (req, res, next) => { //OK
+    database.get(`SELECT * FROM alunos WHERE id = '${req.params.id}'`, function(err, row) {
+        if (err) {
+            throw err;
+        } else if (row === undefined) {
+            res.status(404).json({
+                msg: 'Not Found (student)'
+            });
+        } else {
+            database.run(`DELETE FROM alunos WHERE id=${req.params.id}`, function(err) {
+                if (err) {
+                    throw err;
+                } else {
+                    res.status(200).json({
+                        msg: 'OK - deleted',
+                        id: row.id,
+                        registrado_em: row.registro_em,
+                        situacao: row.situacao,
+                        rga: row.rga,
+                        nome: row.nome,
+                        curso: row.curso,
+                        request: {
+                            type: 'DELETE',
+                            description: 'Delete student information from respective id',
+                            url: `https://locahost:3000/alunos/${req.params.id}`,
+                        }
+                    });
+                }
+            });
+        }
+    });
+    // database.close();
+});
 
-
-
-// router.delete('/:id', (req, res, next) => {
-// 404 (não encontrado): Uma mensagem informando que o usuário não foi encontrado.
-//     res.status(200).json({ 
-//         id: 'unico',
-//         registrado_em: 'dia X', //https://www.devmedia.com.br/date-javascript-trabalhando-com-data-e-hora-em-js/37222
-//         situacao: 'ativo/inativo',
-//         rga: 'obrigatorio/string',
-//         nome: 'obrigatorio/string',
-//         curso: 'string'
-//     })
-// });
 
 
 

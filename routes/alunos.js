@@ -4,24 +4,32 @@ const database = require('../config/database');
 
 router.get('/', (req, res, next) => {
 
-    // let limite = req.query.limite ? req.query.limite : 25;
+    //valores default da request
+    let limite = req.query.limite ? req.query.limite : 25;
+    let pagina = req.query.pagina ? req.query.pagina : 1;
 
-    let sql = `select * from alunos WHERE nome LIKE '%${req.query.nome}%'`;
+    let sql = `SELECT * FROM alunos WHERE nome LIKE '%${req.query.nome}%'`; //nao conseguimos implementar com ? e params
     let params = [];
 
     database.all(sql, params, (err, rows) => {
         if (err) {
-            res.status(400).json({ "error": err.message });
+            res.status(400).json({ "Bad Request": err.message });
             return;
         }
         res.status(200).json({
-            limite: req.query.limite, //25
-            pagina: req.query.pagina, //1
+            limite: req.query.limite,
+            pagina: req.query.pagina,
             nome: req.query.nome,
-            "message": "success",
-            "data": rows
+            request: {
+                type: 'GET',
+                descriptionn: 'return all students or the ones with the casted nome',
+                url: 'https://locahost:3000/alunos'
+            },
+            message: 'Success',
+            data: rows
         });
     });
+    database.close();
 
     // 400 (parâmetros inválidos): Uma mensagem informando o erro.
 });
@@ -54,8 +62,12 @@ router.delete('/', (req, res, next) => {
 
 
 // router.get('/:id', (req, res, next) => {
+// if (res.length === 0) {
+//     res.status(404).jsonn({
+//     msg: 'Not Found (student)'
+// });
 
-// 404 (não encontrado): Uma mensagem informando que o usuário não foi encontrado.
+// }
 //     res.status(200).json({
 //         id: req.params.id
 

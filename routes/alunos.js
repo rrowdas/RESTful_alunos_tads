@@ -86,15 +86,19 @@ router.post('/', (req, res, next) => { //OK
 });
 
 router.put('/', (req, res, next) => { //OK
-    res.status(405).json({
-        msg: 'Method Not Allowed'
-    });
+    if (req.params.id !== null || req.params.id !== undefined) {
+        res.status(405).json({
+            msg: 'Method Not Allowed'
+        });
+    }
 });
 
 router.delete('/', (req, res, next) => { //OK
-    res.status(405).json({
-        msg: 'Method Not Allowed'
-    });
+    if (req.params.id !== null || req.params.id !== undefined) {
+        res.status(405).json({
+            msg: 'Method Not Allowed'
+        });
+    }
 });
 
 router.get('/:id', (req, res, next) => { //OK
@@ -125,7 +129,7 @@ router.get('/:id', (req, res, next) => { //OK
     // database.close();
 });
 
-router.put('/:id', (req, res, next) => { //OK
+router.put('/:id', (req, res, next) => { //TNC NAO SEI FAZER UPDATE
     database.get(`SELECT * FROM alunos WHERE id = '${req.params.id}'`, function(err, row) {
         if (err) {
             throw err;
@@ -215,19 +219,13 @@ router.delete('/:id', (req, res, next) => { //OK
     // database.close();
 });
 
+router.post('/:id', (req, res, next) => { //OK
+    if (req.params.id !== null || req.params.id !== undefined) {
+        res.status(405).json({
+            msg: 'Method Not Allowed'
+        });
+    }
+});
 
-
-
-// router.post('/:id', (req, res, next) => {
-// - **405 (método não permitido):** Uma mensagem informando o erro.
-//     res.status(201).json({
-//         id: 'unico',
-//         registrado_em: 'dia X', //https://www.devmedia.com.br/date-javascript-trabalhando-com-data-e-hora-em-js/37222
-//         situacao: 'ativo/inativo',
-//         rga: 'obrigatorio/string',
-//         nome: 'obrigatorio/string',
-//         curso: 'string'
-//     })
-// });
 // database.close();
 module.exports = router;

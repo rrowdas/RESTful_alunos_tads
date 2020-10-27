@@ -1,4 +1,4 @@
-var sqlite3 = require('sqlite3').verbose()
+const sqlite3 = require('sqlite3').verbose()
     // var md5 = require('md5')
 
 const DBSOURCE = "./SQLite/alunos.db"

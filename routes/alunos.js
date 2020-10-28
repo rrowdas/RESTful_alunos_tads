@@ -5,8 +5,8 @@ const database = require('../config/database');
 router.get('/', (req, res, next) => { //OK
 
     /** Valores default da request **/
-    let limite = req.query.limite ? req.query.limite : 25;
-    let pagina = req.query.pagina ? req.query.pagina : 1;
+    let limite = parseInt(req.query.limite ? req.query.limite : 25, 10);
+    let pagina = parseInt(req.query.pagina ? req.query.pagina : 1, 10);
     let nome = req.query.nome ? req.query.nome : "";
 
     /** Criamos a sql padrão **/
@@ -14,13 +14,13 @@ router.get('/', (req, res, next) => { //OK
 
     /** Caso tenha valor, adiciona ao sql **/
     if (nome) {
-        sql += ` WHERE nome LIKE '%${nome}%'`; //
+        sql += ` WHERE nome LIKE ?`; //
     }
 
     /** Adiciona a ideia de paginação **/
-    sql += ` LIMIT ${limite} OFFSET (${limite} * (${pagina} - 1))`
+    sql += ` LIMIT ? OFFSET ?`;
 
-    let params = [];
+    let params = (nome ? [`%${nome}%`] : []).concat([limite, limite * (pagina - 1)]);
 
     database.all(sql, params, (err, rows) => {
         if (err) {
